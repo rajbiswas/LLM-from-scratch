@@ -1,6 +1,6 @@
-from model import *
-from train import *
-from utils import *
+from model import BigramLM
+from train import vocab_size,embedding_size,train_data, BATCH_SIZE, BLOCK_SIZE
+from utils import get_bigram_mini_batch_samples
 import torch
 
 # Initialize Bigram Language Model
