@@ -3,10 +3,18 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 import torch
 
+from model import BigramLM
+from utils import get_bigram_mini_batch_samples
+
 # Loading the eminem song lyric dataset available here: https://www.kaggle.com/datasets/aditya2803/eminem-lyrics/data
 # Run these commands to download and unzip the dataset:
 #   1. curl -L -o ~/data/eminem-lyrics.zip https://www.kaggle.com/api/v1/datasets/download/aditya2803/eminem-lyrics
 #   2. unzip ~/data/eminem-lyrics.zip
+
+# Setting global variables
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+BATCH_SIZE = 4
+BLOCK_SIZE = 8
 
 # Read the data into a DataFrame
 df = pd.read_csv('data/Eminem_Lyrics.csv', sep='\t', comment='#', encoding = "ISO-8859-1")
@@ -47,3 +55,12 @@ all_text_encoded = torch.tensor(encode(all_text))
 split_index = int(len(all_text_encoded) * 0.9)
 train_data = all_text_encoded[:split_index]
 val_data = all_text_encoded[split_index:]
+
+# 5. Creating mini-batch samples
+X_train, y_train = get_bigram_mini_batch_samples(train_data, BATCH_SIZE, BLOCK_SIZE)
+
+# 6. Initializing the model
+vocab_size= len(chars)
+embedding_size = len(chars)
+model = BigramLM(vocab_size, embedding_size)
+
