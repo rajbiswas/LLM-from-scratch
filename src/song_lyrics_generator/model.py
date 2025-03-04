@@ -61,6 +61,13 @@ class BigramLM(nn.Module):
             2. Applies softmax to get probability distribution
             3. Samples from the distribution to generate predictions
             4. Computes loss if target labels are provided
+
+        TODO:
+            Current implementation only produces predictions based on the last character
+            in each block. Need to modify the forward pass to:
+            1. Support batch predictions for all individual characters in a block
+            2. Make it compatible with mini-batch training by considering the entire
+            sequence context
         """
         # Get logits from embedding layer
         mini_batch_logits = self.embed(mini_batch)
