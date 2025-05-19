@@ -15,7 +15,7 @@ class BigramLM(nn.Module):
         super().__init__()
         self.embed = nn.Embedding(vocab_size, emb_size)
 
-    def get_loss(self, mini_batch_logits, y):
+    def get_batch_loss(self, mini_batch_logits, y):
         """Calculate the cross-entropy loss for the model's predictions.
 
         Args:
@@ -82,7 +82,7 @@ class BigramLM(nn.Module):
         # Compute loss during training, return None during inference
         loss = None
         if y is not None:
-            loss = self.get_loss(mini_batch_logits, y)
+            loss = self.get_batch_loss(mini_batch_logits, y)
 
         return y_pred, loss
     
