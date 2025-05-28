@@ -2,8 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from train import encode, decode
-
 class BigramLM(nn.Module):
     """
     Class defining the bi-gram language model for next character prediction.
@@ -86,12 +84,14 @@ class BigramLM(nn.Module):
 
         return y_pred, loss
     
-    def generate_song(self, initial_char, song_length):
+    def generate_song(self, initial_char, song_length, encode_fn=None, decode_fn=None):
         """Generate a song sequence starting from an initial character.
 
         Args:
             initial_char (str): The first character to start the song generation.
             song_length (int): The desired length of the generated song in characters.
+            encode_fn (callable): Function to encode characters to indices.
+            decode_fn (callable): Function to decode indices back to characters.
 
         Returns:
             str: The generated song text.
@@ -101,16 +101,22 @@ class BigramLM(nn.Module):
             It maintains a context of the last character to predict the next one,
             building the song sequence iteratively.
         """
+        if encode_fn is None or decode_fn is None:
+            raise ValueError("encode_fn and decode_fn must be provided")
+            
         song = []
         
+        # Get the device the model is on
+        device = next(self.parameters()).device
+        
         # Encode the initial character to its corresponding index
-        previous_char = encode(initial_char)
+        previous_char = encode_fn(initial_char)
         
         # Generate characters one at a time
         for _ in range(song_length):
             # Create input tensor with zeros, shape: (1, 8)
             # Only the last position will contain the previous character
-            input = torch.zeros(1, 8, dtype=torch.int64)
+            input = torch.zeros(1, 8, dtype=torch.int64, device=device)
             input[0, -1] = previous_char
             
             # Get model prediction and ignore the loss
@@ -120,7 +126,7 @@ class BigramLM(nn.Module):
             previous_char = y_pred[-1]
             
             # Add the predicted character to our song sequence
-            song.append(previous_char)
+            song.append(previous_char.item())
         
         # Convert the list of character indices back to a string
-        return decode(torch.tensor(song))
+        return decode_fn(song)
